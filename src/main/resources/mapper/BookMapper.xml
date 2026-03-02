@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.anread.server.mapper.BookShelfMapper">
+    <select id="selectBookVo" resultType="com.anread.common.vo.ShelfBookVo">
+        SELECT bk.id, bk.title, bk.author, bk.category_id,
+                bk.main_category, bk.sub_category, bk.cover,
+                rr.reading_status
+        FROM user_shelf us
+        LEFT JOIN reading_record rr
+        ON us.user_id = rr.user_id AND us.book_id = rr.book_id
+        LEFT JOIN book bk
+        ON rr.book_id = bk.id
+        WHERE us.user_id = #{userId}
+        ORDER BY us.update_timestamp DESC
+    </select>
+</mapper>

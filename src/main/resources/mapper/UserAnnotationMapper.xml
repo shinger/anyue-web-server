@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.anread.user.mapper.UserAnnotationMapper">
+    <resultMap id="userAnnotationListResultMap" type="com.anread.common.vo.UserAnnotationListVO">
+        <result property="tocParentIndex" column="toc_parent_index"/>
+        <result property="tocChildIndex" column="toc_child_index"/>
+        <result property="userAnnotationList"
+                column="userAnnotationList"
+                typeHandler="com.anread.common.typehandler.JsonListTypeHandler"/>
+    </resultMap>
+
+    <select id="getUserAnnotationsInToc" resultMap="userAnnotationListResultMap">
+        SELECT
+            toc_parent_index,
+            toc_child_index,
+            JSON_ARRAYAGG(anno_json) AS userAnnotationList
+        FROM (
+                 SELECT
+                     toc_parent_index,
+                     toc_child_index,
+                     JSON_OBJECT(
+                             'id', id,
+                             'type', type,
+                             'lineColor', line_color,
+                             'lineContent', line_content,
+                             'ideaContent', idea_content,
+                             'epubCfiRange', epub_cfi_range
+                     ) AS anno_json
+                 FROM user_annotation
+                 WHERE
+                     user_id = #{userId}
+                   AND book_id = #{bookId}
+                 ORDER BY toc_parent_index, toc_child_index, epub_cfi_range
+             ) AS sorted_anno
+        GROUP BY toc_parent_index, toc_child_index
+        ORDER BY toc_parent_index, toc_child_index;
+    </select>
+</mapper>
